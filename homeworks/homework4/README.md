@@ -21,4 +21,4 @@
     Solution:
     **DONE** in windows using WSL and run without issue.
 
-3.
+3.  Complete exercises 1 to 7 (check starknet exercises folder)
