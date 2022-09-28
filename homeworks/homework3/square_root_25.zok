@@ -1,0 +1,5 @@
+
+def main(private u8 a) -> bool {
+    
+    return a * a == 25;
+}
