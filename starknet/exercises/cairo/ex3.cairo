@@ -1,23 +1,23 @@
-%builtins output range_check
-// Import the serialize_word() function.
-from starkware.cairo.common.serialize import serialize_word
+%builtins range_check
+
 
 // Perform and log output of simple arithmetic operations
-func simple_math{output_ptr: felt*, range_check_ptr}() {
+func simple_math{range_check_ptr}() {
    // adding 13 +  14
-   serialize_word(13 + 14);
+   let add = 13 + 14;
+    %{ print(f"adding 13 +  14: {ids.add}") %}
 
    // multiplying 3 * 6
-   serialize_word(3 * 6);
-
+   let mul = 3 * 6;
+    %{ print(f"multiplying 3 * 6: {ids.mul}") %}
    // dividing 6 by 2
-   serialize_word(6 / 2);
-
+   let div = 6 / 2;
+    %{ print(f"dividing 6 by 2: {ids.div}") %}
    // dividing 70 by 2
-   serialize_word(70 / 2);
-
+   let div2 = 70 / 2;
+    %{ print(f"dividing 70 by 2: {ids.div2}") %}
    // dividing 7 by 2
-   serialize_word(7 / 2);
-
+   let div3 = 7 / 2;
+    %{ print(f"dividing 7 by 2: {ids.div3}") %} 
     return ();
 }
