@@ -5,7 +5,7 @@
     b) Deploy the default contract, make sure you understand the process
 
     Solution:
-    a) DONE
+    a) DONE \
     b) starknet playground not properly deploy the contract.
 
 
@@ -13,4 +13,4 @@
 
     Solution:
 
-    DONE at (at starknet/exercies/contracts/basic) folder
+    DONE at (at starknet/exercises) folder
