@@ -8,6 +8,7 @@ from starkware.cairo.common.uint256 import (
 )
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.math import unsigned_div_rem, assert_le_felt
+from starkware.cairo.common.bitwise import bitwise_and, bitwise_xor
 from starkware.cairo.common.math import (
     assert_not_zero,
     assert_not_equal,
@@ -31,15 +32,22 @@ from exercises.contracts.erc20.ERC20_base import (
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    name: felt, symbol: felt, initial_supply: Uint256, admin: felt
+    name: felt, symbol: felt, initial_supply: Uint256, recipient: felt, _admin: felt
 ) {
     ERC20_initializer(name, symbol, initial_supply, recipient);
-    admin.write(admin);
+    admin.write(_admin);
     return ();
 }
 
 // Storage
 //#########################################################################################
+@storage_var
+func admin() -> (address: felt) {
+}
+
+@storage_var
+func whitelist(address: felt) -> (granted: felt) {
+}
 
 
 
@@ -105,6 +113,10 @@ func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     recipient: felt, amount: Uint256
 ) -> (success: felt) {
 
+    // let (check_even) = bitwise_xor(amount,1);
+
+    // assert (check_even) = arr[0] + 1;
+
     ERC20_transfer(recipient, amount);
     return (1,);
 }
@@ -131,14 +143,27 @@ func request_whitelist{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     level_granted: felt
 ) {
 
-    return (level_granted,);
+    let (caller) = get_caller_address();
+
+    whitelist.write(
+        address=caller,
+        value=1,
+    );
+
+    return (1,);
 }
 
 @external
 func check_whitelist{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     account: felt
 ) -> (allowed_v: felt) {
-    return (allowed_v,);
+
+    let (caller) = get_caller_address();
+
+    let (is_allowed) = whitelist.read(address=caller);
+
+
+    return (is_allowed,);
 }
 
 @external
