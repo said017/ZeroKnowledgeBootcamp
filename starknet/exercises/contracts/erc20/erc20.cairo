@@ -5,10 +5,10 @@ from starkware.cairo.common.uint256 import (
     uint256_le,
     uint256_unsigned_div_rem,
     uint256_sub,
+    uint256_mul
 )
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.math import unsigned_div_rem, assert_le_felt
-from starkware.cairo.common.bitwise import bitwise_and, bitwise_xor
 from starkware.cairo.common.math import (
     assert_not_zero,
     assert_not_equal,
@@ -32,10 +32,10 @@ from exercises.contracts.erc20.ERC20_base import (
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    name: felt, symbol: felt, initial_supply: Uint256, recipient: felt, _admin: felt
+    name: felt, symbol: felt, initial_supply: Uint256, recipient: felt
 ) {
-    ERC20_initializer(name, symbol, initial_supply, recipient);
-    admin.write(_admin);
+    ERC20_initializer(name, symbol, initial_supply,recipient);
+    admin.write(recipient);
     return ();
 }
 
@@ -113,9 +113,8 @@ func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     recipient: felt, amount: Uint256
 ) -> (success: felt) {
 
-    // let (check_even) = bitwise_xor(amount,1);
-
-    // assert (check_even) = arr[0] + 1;
+    let (res,rem) = unsigned_div_rem (amount.low,2);
+    assert rem = 0;
 
     ERC20_transfer(recipient, amount);
     return (1,);
@@ -125,7 +124,7 @@ func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func faucet{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(amount: Uint256) -> (
     success: felt
 ) {
-
+    assert_le(amount.low, 10000);
     let (caller) = get_caller_address();
     ERC20_mint(caller, amount);
     return (1,);
@@ -135,6 +134,17 @@ func faucet{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(amo
 func burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(amount: Uint256) -> (
     success: felt
 ) {
+    alloc_locals; 
+    let (caller) = get_caller_address();
+    let (admin) = get_admin();
+
+    let (ten, _) = uint256_unsigned_div_rem(amount, Uint256(10,0));
+    let (to_burn, _) = uint256_mul(ten, Uint256(9,0));
+
+    // amount increased in admin's balance
+    ERC20_transfer(admin, ten); 
+    // amount burned
+    ERC20_burn(caller,to_burn);
     return (1,);
 }
 
@@ -170,6 +180,12 @@ func check_whitelist{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 func exclusive_faucet{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     amount: Uint256
 ) -> (success: felt) {
+
+    let (caller) = get_caller_address();
+    let (is_allowed) = check_whitelist(account=caller);
+    assert is_allowed = 1;
+
+    ERC20_mint(caller, amount);
     return (success=1);
 }
 
